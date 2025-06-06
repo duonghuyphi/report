@@ -75,6 +75,7 @@
 
   <script>
     var app = angular.module('reportApp', []);
+    var API_BASE_URL = 'https://report-backend.onrender.com';
 
     app.controller('ReportController', function ($scope, $http) {
       $scope.tables = [];
@@ -83,7 +84,7 @@
       $scope.selectedTable = '';
 
       // Load table list
-      $http.get("http://localhost:8080/tables")
+      $http.get(API_BASE_URL+"/tables")
               .then(function (response) {
                 $scope.tables = response.data.filter((value, index, self) => {
                   const isDuplicate = self.indexOf(value) !== index;
@@ -95,7 +96,7 @@
       // Load data of selected table
       $scope.viewTable = function (tableName) {
         $scope.selectedTable = tableName;
-        const apiUrl = `http://localhost:8080/table-data?tableName=${encodeURIComponent(tableName)}`;
+        const apiUrl = API_BASE_URL + `/table-data?tableName=${encodeURIComponent(tableName)}`;
         $http.get(apiUrl)
                 .then(function (response) {
                   $scope.tableData = response.data;
@@ -115,7 +116,7 @@
           return;
         }
 
-        const apiUrl = `http://localhost:8080/excel/delete-table?tableName=${encodeURIComponent(tableName)}`;
+        const apiUrl = API_BASE_URL+`/excel/delete-table?tableName=${encodeURIComponent(tableName)}`;
         $http.delete(apiUrl)
                 .then(function (response) {
                   alert("Đã xóa bảng thành công.");
@@ -151,7 +152,7 @@
       // };
 
       $scope.viewProcessedCombo = function () {
-        $http.get("http://localhost:8080/excel/expand-combo")
+        $http.get(API_BASE_URL+"/excel/expand-combo")
                 .then(function (response) {
                   $scope.tableData = response.data;
                   $scope.selectedTable = 'Kết quả mở rộng Combo';
