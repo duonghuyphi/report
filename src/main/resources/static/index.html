@@ -12,6 +12,7 @@
       crossorigin="anonymous"
     />
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
   </head>
   <body>
@@ -20,11 +21,14 @@
     <div ng-controller="SingleUploadCtrl">
       <form ng-submit="uploadReport()">
         <input type="file" file-model="reportFile" required />
-        <button type="submit" class="btn btn-primary">Upload</button>
-        <button onclick="location.reload()" class="btn btn-info">🔄 Refresh</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-upload"></i> Upload</button>
+        <button onclick="location.reload()" class="btn btn-info"><i class="bi bi-arrow-clockwise rotate"></i> Refresh</button>
       </form>
       <pre>{{ result | json }}</pre>
     </div>
+
+    <h2>Xử lý sản phẩm combo</h2>
+    <button class="btn btn-success mb-3" ng-click="viewProcessedCombo()">🚀 Xử lý và hiển thị kết quả Combo</button>
 
 
     <h2>Danh sách bảng trong CSDL</h2>
@@ -131,21 +135,37 @@
       $scope.filenameReport = 'report.xlsx';
       $scope.filenameGift = 'gift.xlsx';
 
-      $scope.loadExpandedData = function () {
-        const apiUrl = `http://localhost:8080/excel/report-expanded?report=${$scope.filenameReport}&gift=${$scope.filenameGift}`;
-        $http.get(apiUrl)
+      // $scope.loadExpandedData = function () {
+      //   const apiUrl = `http://localhost:8080/excel/report-expanded?report=${$scope.filenameReport}&gift=${$scope.filenameGift}`;
+      //   $http.get(apiUrl)
+      //           .then(function (response) {
+      //             $scope.tableData = response.data;
+      //             if ($scope.tableData.length > 0) {
+      //               $scope.columns = Object.keys($scope.tableData[0]);
+      //             }
+      //           })
+      //           .catch(function (error) {
+      //             alert("Không thể tải dữ liệu đã xử lý!");
+      //             console.error(error);
+      //           });
+      // };
+
+      $scope.viewProcessedCombo = function () {
+        $http.get("http://localhost:8080/excel/expand-combo")
                 .then(function (response) {
                   $scope.tableData = response.data;
+                  $scope.selectedTable = 'Kết quả mở rộng Combo';
                   if ($scope.tableData.length > 0) {
                     $scope.columns = Object.keys($scope.tableData[0]);
+                  } else {
+                    $scope.columns = [];
                   }
                 })
                 .catch(function (error) {
-                  alert("Không thể tải dữ liệu đã xử lý!");
-                  console.error(error);
+                  console.error("Lỗi khi xử lý combo:", error);
+                  alert("Không thể xử lý dữ liệu combo.");
                 });
       };
-
     });
 
     app.directive('fileModel', ['$parse', function ($parse) {

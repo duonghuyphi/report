@@ -151,4 +151,50 @@ public class ExcelService {
         jdbcTemplate.execute(sql);
     }
 
+    public List<Map<String, Object>> expandComboRows() {
+        List<Map<String, Object>> report = fetchAllData("report");
+        List<Map<String, Object>> gift = fetchAllData("gift");
+
+        // Map để tra cứu nhanh theo SKU sản phẩm
+        Map<String, List<String>> giftBarcodeMap = new HashMap<>();
+        for (Map<String, Object> g : gift) {
+            String sku = (g.get("sku_san_pham") + "").trim();
+
+            List<String> barcodes = new ArrayList<>();
+            for (int i = 1; i <= 4; i++) {
+                Object code = g.get("barcode_" + i);
+                if (code != null && !code.toString().trim().isEmpty()) {
+                    barcodes.add(code.toString().trim());
+                }
+            }
+
+            giftBarcodeMap.put(sku, barcodes);
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Map<String, Object> row : report) {
+            String barcode = (row.get("barcode") + "").trim();
+
+            if (giftBarcodeMap.containsKey(barcode)) {
+                List<String> children = giftBarcodeMap.get(barcode);
+                for (String childBarcode : children) {
+                    Map<String, Object> newRow = new LinkedHashMap<>(row);
+                    newRow.put("barcode", childBarcode); // Chỉ thay đổi cột "Barcode"
+                    result.add(newRow);
+                }
+            } else {
+                result.add(row); // Không phải combo, giữ nguyên
+            }
+        }
+
+        return result;
+    }
+
+
+    public List<Map<String, Object>> fetchAllData(String tableName) {
+        String sql = "SELECT * FROM " + tableName;
+        return jdbcTemplate.queryForList(sql);
+    }
+
 }

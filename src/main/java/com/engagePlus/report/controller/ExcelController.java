@@ -56,4 +56,10 @@ public class ExcelController {
         }
     }
 
+    @GetMapping("/expand-combo")
+    public ResponseEntity<List<Map<String, Object>>> expandCombo() {
+        List<Map<String, Object>> result = excelService.expandComboRows();
+        return ResponseEntity.ok(result);
+    }
+
 }
