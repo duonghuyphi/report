@@ -13,4 +13,4 @@ WORKDIR /app
 COPY --from=build /app/target/report-0.0.1-SNAPSHOT.war report.war
 EXPOSE 8080
 
-ENTRYPOINT ["java","-jar","demo.war"]
+ENTRYPOINT ["java","-jar","report.war"]
