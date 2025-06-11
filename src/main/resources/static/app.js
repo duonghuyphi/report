@@ -1,7 +1,7 @@
 var app = angular.module("reportApp", []);
 
 //var API_BASE_URL = "http://localhost:8080";
-var API_BASE_URL = 'https://report-4luc.onrender.com';
+var API_BASE_URL = 'https://report-1pjd.onrender.com';
 
 app.controller("ReportController", function ($scope, $http) {
     $scope.tables = [];
