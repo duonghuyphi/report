@@ -33,7 +33,8 @@ public class TableController {
     @GetMapping("/table-data")
     public List<Map<String, Object>> getTableData(@RequestParam String tableName) {
         List<Map<String, Object>> data = new ArrayList<>();
-        String query = "SELECT * FROM " + tableName + " LIMIT 100"; // limit để tránh bảng quá lớn
+        //String query = "SELECT * FROM " + tableName + " LIMIT 26"; // limit để tránh bảng quá lớn
+        String query = "SELECT * FROM " + tableName;
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);

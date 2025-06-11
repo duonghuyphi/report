@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.sql.DataSource;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,12 +23,17 @@ public class ExcelController {
     @Autowired
     private ExcelService excelService;
 
+    @Autowired
+    private DataSource dataSource;
+
     @GetMapping("/report-expanded")
-    public List<Map<String, Object>> getExpandedReport(@RequestParam String report, @RequestParam String gift) throws IOException {
+    public List<Map<String, Object>> getExpandedReport(@RequestParam String report, @RequestParam String gift, @RequestParam String products) throws IOException {
         InputStream reportStream = new FileInputStream("path/to/" + report);
         InputStream giftStream = new FileInputStream("path/to/" + gift);
+        InputStream prodStream = new FileInputStream("path/to/" + products);
 
-        return ExcelService.expandComboProducts(reportStream, giftStream);
+
+        return ExcelService.expandComboProducts(reportStream, giftStream, prodStream);
     }
     @GetMapping("/excel-data")
     public List<Map<String, Object>> getExcelData(@RequestParam String filename) {
@@ -35,14 +41,20 @@ public class ExcelController {
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file, @RequestParam("option") String table_Name) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "File không được để trống"));
+        }
+
         try {
-            excelService.readExcelAndGenerateTable(file);
-            return ResponseEntity.ok(Map.of("message", "File uploaded successfully"));
+            excelService.readExcelAndGenerateTable(file, table_Name);
+            return ResponseEntity.ok(Map.of("message", "Tải lên và xử lý thành công"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Lỗi xử lý file: " + e.getMessage()));
         }
     }
+
 
     @DeleteMapping("/delete-table")
     public ResponseEntity<Map<String, String>> deleteTable(@RequestParam String tableName) {

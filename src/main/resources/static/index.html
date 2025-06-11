@@ -1,214 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Document</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css"/>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+            crossorigin="anonymous"
     />
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-
-  </head>
-  <body>
-  <div class="container" ng-app="reportApp" ng-controller="ReportController">
+    <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+</head>
+<body>
+<div class="container" ng-app="reportApp" ng-controller="ReportController">
     <h2>Upload Excel File</h2>
     <div ng-controller="SingleUploadCtrl">
-      <form ng-submit="uploadReport()">
-        <input type="file" file-model="reportFile" required />
-        <button type="submit" class="btn btn-primary"><i class="bi bi-upload"></i> Upload</button>
-        <button onclick="location.reload()" class="btn btn-info"><i class="bi bi-arrow-clockwise rotate"></i> Refresh</button>
-      </form>
-      <pre>{{ result | json }}</pre>
+        <form ng-submit="uploadReport(selectedOption)" class="d-flex flex-column">
+            <div class="d-flex gap-3 mb-3">
+                <div class="input-group uploadFile">
+                    <input type="file" file-model="reportFile" class="form-control" id="inputGroupFile01" required/>
+                </div>
+                <button type="submit" class="btn btn-primary" ng-disabled="uploading">
+                    <i class="bi bi-upload"></i> Upload
+                </button>
+                <button onclick="location.reload()" class="btn btn-info" ng-disabled="uploading">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+            </div>
+
+            <!-- Radio buttons -->
+            <div class="form-check">
+                <input type="radio" class="form-check-input" id="report" ng-model="selectedOption" name="uploadOption" value="report" required>
+                <label class="form-check-label" for="report">Report</label>
+            </div>
+            <div class="form-check">
+                <input type="radio" class="form-check-input" id="Products" ng-model="selectedOption" name="uploadOption" value="products">
+                <label class="form-check-label" for="Products">Products</label>
+            </div>
+            <div class="form-check">
+                <input type="radio" class="form-check-input" id="Gift" ng-model="selectedOption" name="uploadOption" value="gift">
+                <label class="form-check-label" for="Gift">Gift</label>
+            </div>
+            <div class="form-check">
+                <input type="radio" class="form-check-input" id="tcl" ng-model="selectedOption" name="uploadOption" value="tclStock">
+                <label class="form-check-label" for="tcl">TCL Stock</label>
+            </div>
+        </form>
+
+        <!-- Thông báo tiến trình -->
+        <div ng-show="uploading" class="alert alert-warning mt-2 d-flex">
+            Đang tải lên file... Vui lòng chờ. <i class="bi bi-arrow-repeat rotate"></i>
+        </div>
+        <div ng-show="uploadSuccess" class="alert alert-success mt-2">
+            🎉 Upload thành công!
+        </div>
+        <div ng-show="uploadError" class="alert alert-danger mt-2">
+            ❌ Upload thất bại. Vui lòng thử lại.
+        </div>
     </div>
+
 
     <h2>Xử lý sản phẩm combo</h2>
-    <button class="btn btn-success mb-3" ng-click="viewProcessedCombo()">🚀 Xử lý và hiển thị kết quả Combo</button>
+    <button class="btn btn-success mb-3" ng-click="viewProcessedCombo()">
+        🚀 Xử lý và hiển thị kết quả Combo
+    </button>
 
-
-    <h2>Danh sách bảng trong CSDL</h2>
-    <ul class="list-group">
-      <li class="list-group-item d-flex justify-content-between align-items-center"
-          ng-repeat="table in tables">
-        {{ table }}
-        <div>
-        <button class="btn btn-sm btn-link" ng-click="viewTable(table)">Xem</button>
-        <button class="btn btn-sm btn-link text-danger" ng-click="deleteTable(table)">Xóa</button>
-        </div>
-      </li>
+    <div class="d-flex flex-row align-items-center">
+        <h2>Danh sách bảng</h2>
+        <i
+                class="bi ms-2"
+                ng-class="isHidden ? 'bi-eye-slash' : 'bi-eye'"
+                ng-click="toggleTables()"
+                style="cursor: pointer"
+        ></i>
+    </div>
+    <ul id="table" class="list-group" ng-style="isHidden && {'display': 'none'}">
+        <li
+                class="list-group-item d-flex justify-content-between align-items-center"
+                ng-repeat="table in tables"
+        >
+            {{ table }}
+            <div>
+                <button class="btn btn-sm btn-link" ng-click="viewTable(table)">
+                    Xem
+                </button>
+                <button
+                        class="btn btn-sm btn-link text-danger"
+                        ng-click="deleteTable(table)"
+                >
+                    Xóa
+                </button>
+            </div>
+        </li>
     </ul>
 
-    <hr>
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#exampleModal"
+            ng-style="!flag && {'display': 'none'}">
+        Ẩn/ Hiện cột
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade ds" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Danh sách cột</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Checkbox Tất cả -->
+                    <div class="form-check">
+                        <input
+                                type="checkbox"
+                                class="form-check-input"
+                                ng-model="selectAllColumns"
+                                ng-change="toggleAllColumns()"
+                                id="selectAllColumns">
+                        <label class="form-check-label" for="selectAllColumns">
+                            Hiển thị tất cả
+                        </label>
+                    </div>
+
+                    <div class="form-check" ng-repeat="col in columns">
+                        <input
+                                type="checkbox"
+                                class="form-check-input"
+                                ng-model="columnVisibility[col]"
+                                id="{{col}}Visibility">
+                        <label class="form-check-label" for="{{col}}Visibility">
+                            Hiển thị cột {{ col }}
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr/>
 
     <div ng-if="tableData.length > 0">
-      <h4>Dữ liệu từ bảng: {{ selectedTable }}</h4>
-      <table class="table table-hover">
-        <thead>
-        <tr>
-          <th ng-repeat="col in columns">{{ col }}</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="row in tableData">
-          <td ng-repeat="col in columns">{{ row[col] }}</td>
-        </tr>
-        </tbody>
-      </table>
+        <h4>Dữ liệu từ bảng: {{ selectedTable }}</h4>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <!-- Dropdown filter: sẽ ẩn hoặc hiện filter dựa trên sự chọn của người dùng -->
+                <th ng-repeat="col in columns" ng-show="columnVisibility[col]">
+                    <select ng-model="filters[col]" class="form-control form-select form-select-sm" ng-show="columnVisibility[col]">
+                        <option value="">Tất cả</option>
+                        <option ng-repeat="value in getUniqueValues(col)" value="{{ value }}">
+                            {{ value }}
+                        </option>
+                    </select>
+                </th>
+            </tr>
+            <tr>
+                <th ng-repeat="col in columns" ng-show="columnVisibility[col]">
+                    {{ col }}
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                    ng-repeat="row in tableData | filter:customFilter"
+            >
+                <td ng-repeat="col in columns" ng-show="columnVisibility[col]">
+                    {{ row[col] || '-' }}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
     </div>
-  </div>
+    <!-- Nút Back to Top -->
+    <button
+            id="backToTopBtn"
+            class="btn btn-success rounded-circle"
+            title="Trở về đầu trang"
+            ng-click="scrollToTop()">
+        <i class="bi bi-arrow-up"></i>
+    </button>
 
+</div>
 
+<!-- Optional JavaScript; choose one of the two! -->
 
-  <!-- Optional JavaScript; choose one of the two! -->
-
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-      crossorigin="anonymous"
-    ></script>
-
-  <script>
-    var app = angular.module('reportApp', []);
-    var API_BASE_URL = 'https://report-4luc.onrender.com';
-
-    app.controller('ReportController', function ($scope, $http) {
-      $scope.tables = [];
-      $scope.tableData = [];
-      $scope.columns = [];
-      $scope.selectedTable = '';
-
-      // Load table list
-      $http.get(API_BASE_URL+"/tables")
-              .then(function (response) {
-                $scope.tables = response.data.filter((value, index, self) => {
-                  const isDuplicate = self.indexOf(value) !== index;
-                  const isSystemTable = value.includes("wp_") || value.includes("pma_");
-                  return !isDuplicate && !isSystemTable;
-                });
-              });
-
-      // Load data of selected table
-      $scope.viewTable = function (tableName) {
-        $scope.selectedTable = tableName;
-        const apiUrl = API_BASE_URL + `/table-data?tableName=${encodeURIComponent(tableName)}`;
-        $http.get(apiUrl)
-                .then(function (response) {
-                  $scope.tableData = response.data;
-                  if ($scope.tableData.length > 0) {
-                    $scope.columns = Object.keys($scope.tableData[0]);
-                  } else {
-                    $scope.columns = [];
-                  }
-                })
-                .catch(function (error) {
-                  console.error("Lỗi tải dữ liệu bảng:", error);
-                  alert("Không thể tải dữ liệu bảng.");
-                });
-      };
-      $scope.deleteTable = function (tableName) {
-        if (!confirm(`Bạn có chắc chắn muốn xóa bảng "${tableName}"?`)) {
-          return;
-        }
-
-        const apiUrl = API_BASE_URL+`/excel/delete-table?tableName=${encodeURIComponent(tableName)}`;
-        $http.delete(apiUrl)
-                .then(function (response) {
-                  alert("Đã xóa bảng thành công.");
-                  $scope.selectedTable = null;
-                  $scope.tableData = [];
-                  $scope.columns = [];
-                  // Có thể reload danh sách bảng nếu bạn có 1 hàm load lại danh sách
-                  // $scope.loadAllTables();
-                  location.reload();
-                })
-                .catch(function (error) {
-                  console.error("Lỗi khi xóa bảng:", error);
-                  alert("Không thể xóa bảng.");
-                });
-      };
-
-      $scope.filenameReport = 'report.xlsx';
-      $scope.filenameGift = 'gift.xlsx';
-
-      // $scope.loadExpandedData = function () {
-      //   const apiUrl = `http://localhost:8080/excel/report-expanded?report=${$scope.filenameReport}&gift=${$scope.filenameGift}`;
-      //   $http.get(apiUrl)
-      //           .then(function (response) {
-      //             $scope.tableData = response.data;
-      //             if ($scope.tableData.length > 0) {
-      //               $scope.columns = Object.keys($scope.tableData[0]);
-      //             }
-      //           })
-      //           .catch(function (error) {
-      //             alert("Không thể tải dữ liệu đã xử lý!");
-      //             console.error(error);
-      //           });
-      // };
-
-      $scope.viewProcessedCombo = function () {
-        $http.get(API_BASE_URL+"/excel/expand-combo")
-                .then(function (response) {
-                  $scope.tableData = response.data;
-                  $scope.selectedTable = 'Kết quả mở rộng Combo';
-                  if ($scope.tableData.length > 0) {
-                    $scope.columns = Object.keys($scope.tableData[0]);
-                  } else {
-                    $scope.columns = [];
-                  }
-                })
-                .catch(function (error) {
-                  console.error("Lỗi khi xử lý combo:", error);
-                  alert("Không thể xử lý dữ liệu combo.");
-                });
-      };
-    });
-
-    app.directive('fileModel', ['$parse', function ($parse) {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          const model = $parse(attrs.fileModel);
-          const modelSetter = model.assign;
-
-          element.bind('change', function () {
-            scope.$apply(function () {
-              modelSetter(scope, element[0].files[0]);
-            });
-          });
-        }
-      };
-    }]);
-
-    app.controller('SingleUploadCtrl', ['$scope', '$http', function ($scope, $http) {
-      $scope.uploadReport = function () {
-        const formData = new FormData();
-        formData.append('file', $scope.reportFile); // 👈 key là 'file'
-
-        $http.post('/excel/upload', formData, {
-          transformRequest: angular.identity,
-          headers: { 'Content-Type': undefined }
-        }).then(function (response) {
-          $scope.result = response.data;
-          location.reload();
-        }, function () {
-          alert('Upload failed');
-        });
-      };
-    }]);
-
-
-  </script>
-
-  <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
-    -->
-  </body>
+<!-- Option 1: Bootstrap Bundle with Popper -->
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+<script src="app.js"></script>
+</body>
 </html>
