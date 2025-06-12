@@ -50,3 +50,35 @@ body {
   visibility: visible;
   transform: translateX(0);
 }
+.pagination-sm>li:first-child>a, .pagination-sm>li:first-child>span {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+.pagination-sm>li:last-child>a, .pagination-sm>li:last-child>span {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+.pagination-sm>li>a, .pagination-sm>li>span {
+  position: relative;
+  float: left;
+   padding: 5px 10px;
+   font-size: 12px;
+   line-height: 1.5;
+  color: #337ab7;
+  text-decoration: none;
+  background-color: #fff;
+  border: 1px solid #ddd;
+ }
+.pagination-sm>li>a:focus, .pagination-sm>li>a:hover, .pagination-sm>li>span:focus, .pagination-sm>li>span:hover {
+  z-index: 2;
+  color: #23527c;
+  background-color: #eee;
+  border-color: #ddd;
+}
+.pagination-sm>.active>a, .pagination-sm>.active>a:focus, .pagination-sm>.active>a:hover, .pagination-sm>.active>span, .pagination-sm>.active>span:focus, .pagination-sm>.active>span:hover {
+  z-index: 3;
+  color: #fff;
+  cursor: default;
+  background-color: #337ab7;
+  border-color: #337ab7;
+}

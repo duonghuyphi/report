@@ -1,9 +1,9 @@
-var app = angular.module("reportApp", []);
+var app = angular.module("reportApp", ['ui.bootstrap']);
 
-//var API_BASE_URL = "http://localhost:8080";
+// var API_BASE_URL = "http://localhost:8080";
 var API_BASE_URL = 'https://report-1pjd.onrender.com';
 
-app.controller("ReportController", function ($scope, $http) {
+app.controller("ReportController", function ($scope, $http, $filter) {
     $scope.tables = [];
     $scope.tableData = [];
     $scope.columns = [];
@@ -12,6 +12,26 @@ app.controller("ReportController", function ($scope, $http) {
     $scope.columnVisibility = {}; // Để lưu trạng thái hiển thị của các cột
     $scope.isHidden = true;
     $scope.flag = false;
+    $scope.bigCurrentPage = 1;
+    $scope.itemsPerPage = 5; // Số dòng mỗi trang
+    $scope.maxSize = 5; // Số trang hiển thị trong phân trang
+
+    //pagination
+    $scope.getPagedData = function () {
+        const filtered = $scope.tableData.filter($scope.customFilter);
+        if ($scope.itemsPerPage === 0 || $scope.itemsPerPage >= filtered.length) {
+            return filtered; // Hiển thị tất cả
+        }
+        const start = ($scope.bigCurrentPage - 1) * $scope.itemsPerPage;
+        return filtered.slice(start, start + $scope.itemsPerPage);
+    };
+    $scope.updatePagination = function () {
+        if ($scope.itemsPerPage === 0) {
+            // Nếu chọn "Tất cả", đặt thành số lượng bản ghi hiện tại
+            $scope.itemsPerPage = $scope.tableData.filter($scope.customFilter).length || 1;
+        }
+        $scope.bigCurrentPage = 1; // Reset về trang đầu
+    };
 
     // Khởi tạo tất cả đều được hiển thị
     $scope.columns.forEach(col => {
@@ -50,6 +70,8 @@ app.controller("ReportController", function ($scope, $http) {
             .get(apiUrl)
             .then(function (response) {
                 $scope.tableData = response.data;
+                $scope.bigCurrentPage = 1;
+                $scope.itemsPerPage = 5;
                 if ($scope.tableData.length > 0) {
                     $scope.columns = Object.keys($scope.tableData[0]);
                     // Mặc định tất cả các cột đều hiển thị
@@ -95,6 +117,7 @@ app.controller("ReportController", function ($scope, $http) {
             .get(API_BASE_URL + "/excel/expand-combo")
             .then(function (response) {
                 $scope.tableData = response.data;
+                $scope.bigCurrentPage = 1;
                 $scope.selectedTable = "Kết quả mở rộng Combo";
                 if ($scope.tableData.length > 0) {
                     $scope.columns = Object.keys($scope.tableData[0]);

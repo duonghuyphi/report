@@ -150,6 +150,20 @@
 
     <div ng-if="tableData.length > 0">
         <h4>Dữ liệu từ bảng: {{ selectedTable }}</h4>
+        <label>
+            Hiển thị:
+            <select ng-model="itemsPerPage" ng-change="updatePagination()" class="form-control d-inline-block" style="width: auto;">
+                <option ng-value="5" selected>5</option>
+                <option ng-value="10">10</option>
+                <option ng-value="20">20</option>
+                <option ng-value="50">50</option>
+                <option ng-value="100">100</option>
+                <option ng-value="200">200</option>
+                <option ng-value="500">500</option>
+                <option ng-value="tableData.length">Tất cả</option>
+            </select>
+        </label>
+
         <table class="table table-hover">
             <thead>
             <tr>
@@ -171,15 +185,33 @@
             </thead>
             <tbody>
             <tr
-                    ng-repeat="row in tableData | filter:customFilter"
+                    ng-repeat="row in (tableData | filter:customFilter).slice((bigCurrentPage - 1) * itemsPerPage, bigCurrentPage * itemsPerPage)"
             >
                 <td ng-repeat="col in columns" ng-show="columnVisibility[col]">
                     {{ row[col] || '-' }}
                 </td>
             </tr>
+<!--            <tr ng-repeat="row in getPagedData()">-->
+<!--                <td ng-repeat="col in columns" ng-show="columnVisibility[col]">-->
+<!--                    {{ row[col] }}-->
+<!--                </td>-->
+<!--            </tr>-->
             </tbody>
         </table>
-
+        <nav>
+            <ul uib-pagination
+                total-items="(tableData | filter:customFilter).length"
+                ng-model="bigCurrentPage"
+                max-size="maxSize"
+                items-per-page="itemsPerPage"
+                class="pagination-sm pt pagination"
+                boundary-link-numbers="true"
+                previous-text="«"
+                next-text="»"
+                first-text="‹‹"
+                last-text="››">
+            </ul>
+        </nav>
     </div>
     <!-- Nút Back to Top -->
     <button
@@ -199,6 +231,7 @@
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.5.6/ui-bootstrap-tpls.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
