@@ -135,7 +135,7 @@
                                 ng-model="columnVisibility[col]"
                                 id="{{col}}Visibility">
                         <label class="form-check-label" for="{{col}}Visibility">
-                            Hiển thị cột {{ col }}
+                            Hiển thị cột <<{{ col }}>>
                         </label>
                     </div>
                 </div>
@@ -149,20 +149,22 @@
     <hr/>
 
     <div ng-if="tableData.length > 0">
-        <h4>Dữ liệu từ bảng: {{ selectedTable }}</h4>
-        <label>
-            Hiển thị:
-            <select ng-model="itemsPerPage" ng-change="updatePagination()" class="form-control d-inline-block" style="width: auto;">
-                <option ng-value="5" selected>5</option>
-                <option ng-value="10">10</option>
-                <option ng-value="20">20</option>
-                <option ng-value="50">50</option>
-                <option ng-value="100">100</option>
-                <option ng-value="200">200</option>
-                <option ng-value="500">500</option>
-                <option ng-value="tableData.length">Tất cả</option>
-            </select>
-        </label>
+        <div class="d-flex justify-content-between mb-3">
+            <h4>Dữ liệu từ bảng: {{ selectedTable }}</h4>
+            <label>
+                Hiển thị:
+                <select ng-model="itemsPerPage" ng-change="updatePagination()" class="form-control d-inline-block" style="width: auto;">
+                    <option ng-value="5" selected>5</option>
+                    <option ng-value="10">10</option>
+                    <option ng-value="20">20</option>
+                    <option ng-value="50">50</option>
+                    <option ng-value="100">100</option>
+                    <option ng-value="200">200</option>
+                    <option ng-value="500">500</option>
+                    <option ng-value="tableData.length">Tất cả</option>
+                </select>
+            </label>
+        </div>
 
         <table class="table table-hover">
             <thead>
@@ -171,8 +173,8 @@
                 <th ng-repeat="col in columns" ng-show="columnVisibility[col]">
                     <select ng-model="filters[col]" class="form-control form-select form-select-sm" ng-show="columnVisibility[col]">
                         <option value="">Tất cả</option>
-                        <option ng-repeat="value in getUniqueValues(col)" value="{{ value }}">
-                            {{ value }}
+                        <option ng-repeat="value in getUniqueValues(col)" value="{{value}}">
+                            {{value || 'null'}}
                         </option>
                     </select>
                 </th>
@@ -191,14 +193,9 @@
                     {{ row[col] || '-' }}
                 </td>
             </tr>
-<!--            <tr ng-repeat="row in getPagedData()">-->
-<!--                <td ng-repeat="col in columns" ng-show="columnVisibility[col]">-->
-<!--                    {{ row[col] }}-->
-<!--                </td>-->
-<!--            </tr>-->
             </tbody>
         </table>
-        <nav>
+        <nav class="d-flex justify-content-center">
             <ul uib-pagination
                 total-items="(tableData | filter:customFilter).length"
                 ng-model="bigCurrentPage"

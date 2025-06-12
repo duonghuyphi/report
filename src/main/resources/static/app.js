@@ -72,11 +72,14 @@ app.controller("ReportController", function ($scope, $http, $filter) {
                 $scope.tableData = response.data;
                 $scope.bigCurrentPage = 1;
                 $scope.itemsPerPage = 5;
+                $scope.filters = {}; // Reset filters
+                $scope.columnVisibility = {}; // Reset visibility
                 if ($scope.tableData.length > 0) {
                     $scope.columns = Object.keys($scope.tableData[0]);
                     // Mặc định tất cả các cột đều hiển thị
-                    angular.forEach($scope.columns, function (col) {
-                        $scope.columnVisibility[col] = true;
+                    angular.forEach($scope.columns, function (col, index) {
+                        $scope.columnVisibility[col] = index < 3;     // Hiện tất cả cột
+                        $scope.filters[col] = "";                // Khởi tạo filter là rỗng
                     });
                 } else {
                     $scope.columns = [];
@@ -140,13 +143,20 @@ app.controller("ReportController", function ($scope, $http, $filter) {
     $scope.customFilter = function (row) {
         var match = true;
         angular.forEach($scope.columns, function (col) {
-            if ($scope.filters[col] && row[col].toString().indexOf($scope.filters[col]) === -1) {
-                match = false;
+            var filterValue = $scope.filters[col];
+            if (filterValue !== undefined && filterValue !== '') {
+                // Chuẩn hóa giá trị so sánh để tránh lỗi do khoảng trắng, chữ hoa/thường
+                var rowValue = row[col] !== undefined && row[col] !== null ? row[col].toString().trim().toLowerCase() : '';
+                var filterStr = filterValue.toString().trim().toLowerCase();
+
+                // So sánh chính xác chuỗi
+                if (rowValue !== filterStr) {
+                    match = false;
+                }
             }
         });
         return match;
     };
-
 
     window.onscroll = function () {
         const btn = document.getElementById("backToTopBtn");
