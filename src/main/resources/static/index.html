@@ -19,205 +19,231 @@
 </head>
 <body>
 <div class="container" ng-app="reportApp" ng-controller="ReportController">
-    <h2>Upload Excel File</h2>
-    <div ng-controller="SingleUploadCtrl">
-        <form ng-submit="uploadReport(selectedOption)" class="d-flex flex-column">
-            <div class="d-flex gap-3 mb-3">
-                <div class="input-group uploadFile">
-                    <input type="file" file-model="reportFile" class="form-control" id="inputGroupFile01" required/>
-                </div>
-                <button type="submit" class="btn btn-primary" ng-disabled="uploading">
-                    <i class="bi bi-upload"></i> Upload
-                </button>
-                <button onclick="location.reload()" class="btn btn-info" ng-disabled="uploading">
-                    <i class="bi bi-arrow-clockwise"></i> Refresh
-                </button>
-            </div>
-
-            <!-- Radio buttons -->
-            <div class="form-check">
-                <input type="radio" class="form-check-input" id="report" ng-model="selectedOption" name="uploadOption" value="report" required>
-                <label class="form-check-label" for="report">Report</label>
-            </div>
-            <div class="form-check">
-                <input type="radio" class="form-check-input" id="Products" ng-model="selectedOption" name="uploadOption" value="products">
-                <label class="form-check-label" for="Products">Products</label>
-            </div>
-            <div class="form-check">
-                <input type="radio" class="form-check-input" id="Gift" ng-model="selectedOption" name="uploadOption" value="gift">
-                <label class="form-check-label" for="Gift">Gift</label>
-            </div>
-            <div class="form-check">
-                <input type="radio" class="form-check-input" id="tcl" ng-model="selectedOption" name="uploadOption" value="tclStock">
-                <label class="form-check-label" for="tcl">TCL Stock</label>
-            </div>
-        </form>
-
-        <!-- Thông báo tiến trình -->
-        <div ng-show="uploading" class="alert alert-warning mt-2 d-flex">
-            Đang tải lên file... Vui lòng chờ. <i class="bi bi-arrow-repeat rotate"></i>
-        </div>
-        <div ng-show="uploadSuccess" class="alert alert-success mt-2">
-            🎉 Upload thành công!
-        </div>
-        <div ng-show="uploadError" class="alert alert-danger mt-2">
-            ❌ Upload thất bại. Vui lòng thử lại.
-        </div>
-    </div>
-
-
-    <h2>Xử lý sản phẩm combo</h2>
-    <button class="btn btn-success mb-3" ng-click="viewProcessedCombo()">
-        🚀 Xử lý và hiển thị kết quả Combo
-    </button>
-
-    <div class="d-flex flex-row align-items-center">
-        <h2>Danh sách bảng</h2>
-        <i
-                class="bi ms-2"
-                ng-class="isHidden ? 'bi-eye-slash' : 'bi-eye'"
-                ng-click="toggleTables()"
-                style="cursor: pointer"
-        ></i>
-    </div>
-    <ul id="table" class="list-group" ng-style="isHidden && {'display': 'none'}">
-        <li
-                class="list-group-item d-flex justify-content-between align-items-center"
-                ng-repeat="table in tables"
-        >
-            {{ table }}
-            <div>
-                <button class="btn btn-sm btn-link" ng-click="viewTable(table)">
-                    Xem
-                </button>
-                <button
-                        class="btn btn-sm btn-link text-danger"
-                        ng-click="deleteTable(table)"
-                >
-                    Xóa
-                </button>
-            </div>
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload" type="button"
+                    role="tab" aria-controls="upload" aria-selected="true">Upload File
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="table-tab" data-bs-toggle="tab" data-bs-target="#table" type="button"
+                    role="tab" aria-controls="table" aria-selected="false">Table
+            </button>
         </li>
     </ul>
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="upload" role="tabpanel" aria-labelledby="upload-tab">
+            <h2>Upload Excel File</h2>
+            <div ng-controller="SingleUploadCtrl">
+                <form ng-submit="uploadReport(selectedOption)" class="d-flex flex-column">
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="input-group uploadFile">
+                            <input type="file" file-model="reportFile" class="form-control" id="inputGroupFile01"
+                                   required/>
+                        </div>
+                        <button type="submit" class="btn btn-primary" ng-disabled="uploading">
+                            <i class="bi bi-upload"></i> Upload
+                        </button>
+                        <button onclick="location.reload()" class="btn btn-info" ng-disabled="uploading">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
 
-    <!-- Button trigger modal -->
-    <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#exampleModal"
-            ng-style="!flag && {'display': 'none'}">
-        Ẩn/ Hiện cột
-    </button>
-
-    <!-- Modal -->
-    <div class="modal fade ds" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Danh sách cột</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Checkbox Tất cả -->
+                    <!-- Radio buttons -->
                     <div class="form-check">
-                        <input
-                                type="checkbox"
-                                class="form-check-input"
-                                ng-model="selectAllColumns"
-                                ng-change="toggleAllColumns()"
-                                id="selectAllColumns">
-                        <label class="form-check-label" for="selectAllColumns">
-                            Hiển thị tất cả
-                        </label>
+                        <input type="radio" class="form-check-input" id="report" ng-model="selectedOption"
+                               name="uploadOption" value="report" required>
+                        <label class="form-check-label" for="report">Report</label>
                     </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" id="Products" ng-model="selectedOption"
+                               name="uploadOption" value="products">
+                        <label class="form-check-label" for="Products">Products</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" id="Gift" ng-model="selectedOption"
+                               name="uploadOption" value="gift">
+                        <label class="form-check-label" for="Gift">Gift</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" id="tcl" ng-model="selectedOption"
+                               name="uploadOption" value="tclStock">
+                        <label class="form-check-label" for="tcl">TCL Stock</label>
+                    </div>
+                </form>
 
-                    <div class="form-check" ng-repeat="col in columns">
-                        <input
-                                type="checkbox"
-                                class="form-check-input"
-                                ng-model="columnVisibility[col]"
-                                id="{{col}}Visibility">
-                        <label class="form-check-label" for="{{col}}Visibility">
-                            Hiển thị cột <<{{ col }}>>
-                        </label>
-                    </div>
+                <!-- Thông báo tiến trình -->
+                <div ng-show="uploading" class="alert alert-warning mt-2 d-flex">
+                    Đang tải lên file... Vui lòng chờ. <i class="bi bi-arrow-repeat rotate"></i>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div ng-show="uploadSuccess" class="alert alert-success mt-2">
+                    🎉 Upload thành công!
+                </div>
+                <div ng-show="uploadError" class="alert alert-danger mt-2">
+                    ❌ Upload thất bại. Vui lòng thử lại.
                 </div>
             </div>
         </div>
-    </div>
+        <div class="tab-pane fade" id="table" role="tabpanel" aria-labelledby="table-tab">
+            <h2>Xử lý sản phẩm combo</h2>
+            <button class="btn btn-success mb-3" ng-click="viewProcessedCombo()">
+                🚀 Xử lý và hiển thị kết quả Combo
+            </button>
 
-    <hr/>
-
-    <div ng-if="tableData.length > 0">
-        <div class="d-flex justify-content-between mb-3">
-            <h4>Dữ liệu từ bảng: {{ selectedTable }}</h4>
-            <label>
-                Hiển thị:
-                <select ng-model="itemsPerPage" ng-change="updatePagination()" class="form-control d-inline-block" style="width: auto;">
-                    <option ng-value="5" selected>5</option>
-                    <option ng-value="10">10</option>
-                    <option ng-value="20">20</option>
-                    <option ng-value="50">50</option>
-                    <option ng-value="100">100</option>
-                    <option ng-value="200">200</option>
-                    <option ng-value="500">500</option>
-                    <option ng-value="tableData.length">Tất cả</option>
-                </select>
-            </label>
-        </div>
-
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <!-- Dropdown filter: sẽ ẩn hoặc hiện filter dựa trên sự chọn của người dùng -->
-                <th ng-repeat="col in columns" ng-show="columnVisibility[col]">
-                    <select ng-model="filters[col]" class="form-control form-select form-select-sm" ng-show="columnVisibility[col]">
-                        <option value="">Tất cả</option>
-                        <option ng-repeat="value in getUniqueValues(col)" value="{{value}}">
-                            {{value || 'null'}}
-                        </option>
-                    </select>
-                </th>
-            </tr>
-            <tr>
-                <th ng-repeat="col in columns" ng-show="columnVisibility[col]">
-                    {{ col }}
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr
-                    ng-repeat="row in (tableData | filter:customFilter).slice((bigCurrentPage - 1) * itemsPerPage, bigCurrentPage * itemsPerPage)"
-            >
-                <td ng-repeat="col in columns" ng-show="columnVisibility[col]">
-                    {{ row[col] || '-' }}
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <nav class="d-flex justify-content-center">
-            <ul uib-pagination
-                total-items="(tableData | filter:customFilter).length"
-                ng-model="bigCurrentPage"
-                max-size="maxSize"
-                items-per-page="itemsPerPage"
-                class="pagination-sm pt pagination"
-                boundary-link-numbers="true"
-                previous-text="«"
-                next-text="»"
-                first-text="‹‹"
-                last-text="››">
+            <div class="d-flex flex-row align-items-center">
+                <h2>Danh sách bảng</h2>
+                <i
+                        class="bi ms-2"
+                        ng-class="isHidden ? 'bi-eye-slash' : 'bi-eye'"
+                        ng-click="toggleTables()"
+                        style="cursor: pointer"
+                ></i>
+            </div>
+            <ul id="" class="list-group" ng-style="isHidden && {'display': 'none'}">
+                <li
+                        class="list-group-item d-flex justify-content-between align-items-center"
+                        ng-repeat="table in tables"
+                >
+                    {{ table }}
+                    <div>
+                        <button class="btn btn-sm btn-link" ng-click="viewTable(table)">
+                            Xem
+                        </button>
+                        <button
+                                class="btn btn-sm btn-link text-danger"
+                                ng-click="deleteTable(table)"
+                        >
+                            Xóa
+                        </button>
+                    </div>
+                </li>
             </ul>
-        </nav>
+
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                    ng-style="!flag && {'display': 'none'}">
+                Ẩn/ Hiện cột
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade ds" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Danh sách cột</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Checkbox Tất cả -->
+                            <div class="form-check">
+                                <input
+                                        type="checkbox"
+                                        class="form-check-input"
+                                        ng-model="selectAllColumns"
+                                        ng-change="toggleAllColumns()"
+                                        id="selectAllColumns">
+                                <label class="form-check-label" for="selectAllColumns">
+                                    Hiển thị tất cả
+                                </label>
+                            </div>
+
+                            <div class="form-check" ng-repeat="col in columns">
+                                <input
+                                        type="checkbox"
+                                        class="form-check-input"
+                                        ng-model="columnVisibility[col]"
+                                        id="{{col}}Visibility">
+                                <label class="form-check-label" for="{{col}}Visibility">
+                                    Hiển thị cột <<{{ col }}>>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div ng-if="tableData.length > 0">
+                <div class="d-flex justify-content-between mb-3">
+                    <h4>Dữ liệu từ bảng: {{ selectedTable }}</h4>
+                    <label>
+                        Hiển thị:
+                        <select ng-model="itemsPerPage" ng-change="updatePagination()"
+                                class="form-control d-inline-block"
+                                style="width: auto;">
+                            <option ng-value="5" selected>5</option>
+                            <option ng-value="10">10</option>
+                            <option ng-value="20">20</option>
+                            <option ng-value="50">50</option>
+                            <option ng-value="100">100</option>
+                            <option ng-value="200">200</option>
+                            <option ng-value="500">500</option>
+                            <option ng-value="tableData.length">Tất cả</option>
+                        </select>
+                    </label>
+                </div>
+
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <!-- Dropdown filter: sẽ ẩn hoặc hiện filter dựa trên sự chọn của người dùng -->
+                        <th ng-repeat="col in columns" ng-show="columnVisibility[col]">
+                            <select ng-model="filters[col]" class="form-control form-select form-select-sm"
+                                    ng-show="columnVisibility[col]">
+                                <option value="">Tất cả</option>
+                                <option ng-repeat="value in getUniqueValues(col)" value="{{value}}">
+                                    {{value || 'null'}}
+                                </option>
+                            </select>
+                        </th>
+                    </tr>
+                    <tr class="table-dark">
+                        <th ng-repeat="col in columns" ng-show="columnVisibility[col]">
+                            {{ col }}
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr
+                            ng-repeat="row in (tableData | filter:customFilter).slice((bigCurrentPage - 1) * itemsPerPage, bigCurrentPage * itemsPerPage)"
+                    >
+                        <td ng-repeat="col in columns" ng-show="columnVisibility[col]">
+                            {{ row[col] || '-' }}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <nav class="d-flex justify-content-center">
+                    <ul uib-pagination
+                        total-items="(tableData | filter:customFilter).length"
+                        ng-model="bigCurrentPage"
+                        max-size="maxSize"
+                        items-per-page="itemsPerPage"
+                        class="pagination-sm pt pagination"
+                        boundary-link-numbers="true"
+                        previous-text="«"
+                        next-text="»"
+                        first-text="‹‹"
+                        last-text="››">
+                    </ul>
+                </nav>
+            </div>
+            <!-- Nút Back to Top -->
+            <button
+                    id="backToTopBtn"
+                    class="btn btn-success rounded-circle"
+                    title="Trở về đầu trang"
+                    ng-click="scrollToTop()">
+                <i class="bi bi-arrow-up"></i>
+            </button>
+        </div>
     </div>
-    <!-- Nút Back to Top -->
-    <button
-            id="backToTopBtn"
-            class="btn btn-success rounded-circle"
-            title="Trở về đầu trang"
-            ng-click="scrollToTop()">
-        <i class="bi bi-arrow-up"></i>
-    </button>
+
 
 </div>
 
