@@ -15,6 +15,9 @@ app.controller("ReportController", function ($scope, $http, $filter) {
     $scope.bigCurrentPage = 1;
     $scope.itemsPerPage = 5; // Số dòng mỗi trang
     $scope.maxSize = 5; // Số trang hiển thị trong phân trang
+    $scope.uploading = false;
+    $scope.uploadSuccess = false;
+    $scope.uploadError = false;
 
     //pagination
     $scope.getPagedData = function () {
@@ -173,57 +176,7 @@ app.controller("ReportController", function ($scope, $http, $filter) {
     };
 
     //xuất file order
-    $scope.exportOrders = function () {
-        const shopDomain = "yourstore.myharavan.com"; // thay bằng tên shop thật
-        const accessToken = "your-access-token-here"; // token Haravan
-        const apiUrl = `https://${shopDomain}/admin/orders.json?status=any&limit=250`;
 
-        fetch(apiUrl, {
-            method: 'GET',
-            headers: {
-                "Content-Type": "application/json",
-                "X-Access-Token": accessToken
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                const orders = data.orders;
-                if (!orders || orders.length === 0) {
-                    alert("Không có đơn hàng.");
-                    return;
-                }
-
-                // Chuyển dữ liệu sang CSV
-                const csvRows = [];
-                const headers = ["Mã đơn hàng", "Khách hàng", "Sản phẩm", "SKU", "Số lượng"];
-                csvRows.push(headers.join(","));
-
-                orders.forEach(order => {
-                    order.line_items.forEach(item => {
-                        csvRows.push([
-                            `"${order.name}"`,
-                            `"${order.customer?.first_name || ''} ${order.customer?.last_name || ''}"`,
-                            `"${item.name}"`,
-                            `"${item.sku}"`,
-                            `"${item.quantity}"`
-                        ].join(","));
-                    });
-                });
-
-                const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", "don_hang.csv");
-                document.body.appendChild(link); // bắt buộc với Firefox
-                link.click();
-                link.remove();
-            })
-            .catch(error => {
-                console.error("Lỗi khi lấy dữ liệu từ API:", error);
-                alert("Không thể lấy đơn hàng.");
-            });
-    };
 
 
 });
@@ -287,6 +240,32 @@ app.controller("SingleUploadCtrl", [
                         $scope.uploadError = true;
                     }
                 );
+        };
+        $scope.exportOrders = function () {
+            $scope.uploading = true;
+            $scope.uploadSuccess = false;
+            $scope.uploadError = false;
+            $http.get(API_BASE_URL + "/api/export/orders", { responseType: 'arraybuffer' })
+                .then(function (response) {
+                    const status = response.headers('X-Status');
+                    const message = response.headers('X-Message');
+
+                    if (status === 'success') {
+                        $scope.uploading = false;
+                        $scope.uploadSuccess = true;
+
+                        // Tự động reload sau vài giây nếu bạn muốn
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    }
+                })
+                .catch(function (response) {
+                    const message = response.headers('X-Message') || "Có lỗi xảy ra";
+                    console.error("Lỗi:", message);
+                    $scope.uploading = false;
+                    $scope.uploadError = true;
+                });
         };
     },
 ]);

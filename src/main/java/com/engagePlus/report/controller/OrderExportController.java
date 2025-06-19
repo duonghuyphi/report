@@ -23,12 +23,23 @@ public class OrderExportController {
 
     @GetMapping("/orders")
     public ResponseEntity<byte[]> exportOrders() throws IOException {
-        byte[] excelData = orderExportService.fetchOrdersAndExportExcel();
+        try {
+            byte[] excelData = orderExportService.fetchOrdersAndExportExcel();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=orders.xlsx");
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=orders.xlsx");
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
-        return ResponseEntity.ok().headers(headers).body(excelData);
+            headers.add("X-Status", "success");
+            headers.add("X-Message", "Export thành công");
+
+            return ResponseEntity.ok().headers(headers).body(excelData);
+        } catch (Exception e) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-Status", "error");
+            headers.add("X-Message", "Lỗi khi export: " + e.getMessage());
+
+            return ResponseEntity.status(500).headers(headers).body(null);
+        }
     }
 }
