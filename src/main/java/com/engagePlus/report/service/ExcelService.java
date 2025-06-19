@@ -56,11 +56,16 @@ public class ExcelService {
                 .map(entry -> toSqlColumn(entry.getValue()))
                 .collect(Collectors.toList());
 
-        // B4: Tạo bảng nếu chưa có
+        // B4: Kiểm tra tồn tại bảng → nếu có thì drop
+        if (doesTableExist(tableName)) {
+            jdbcTemplate.execute("DROP TABLE IF EXISTS `" + tableName + "`");
+        }
+
+        // B5: Tạo bảng mới
         String createTableSql = generateCreateTableSQL(tableName, columnNames);
         jdbcTemplate.execute(createTableSql);
 
-        // B5: Chuẩn bị dữ liệu batch insert
+        // B6: Chuẩn bị dữ liệu batch insert
         List<Object[]> batchArgs = new ArrayList<>();
         for (int i = 1; i < excelData.size(); i++) {
             Map<Integer, String> rowMap = excelData.get(i);
@@ -73,7 +78,7 @@ public class ExcelService {
             batchArgs.add(rowValues);
         }
 
-        // B6: Thực hiện batch insert
+        // B7: Thực hiện batch insert
         String insertSql = generatePreparedInsertSQL(tableName, columnNames);
         jdbcTemplate.batchUpdate(insertSql, batchArgs);
     }
@@ -129,67 +134,6 @@ public class ExcelService {
         return toSqlColumn(nameWithoutExtension);
     }
 
-    public static List<Map<String, Object>> expandComboProducts(InputStream reportStream, InputStream giftStream, InputStream prodStream) throws IOException {
-        // Đọc dữ liệu từ các stream
-        List<Map<String, Object>> reportData = EasyExcelFactory.read(reportStream).sheet().doReadSync();
-        List<Map<String, Object>> giftData = EasyExcelFactory.read(giftStream).sheet().doReadSync();
-        List<Map<String, Object>> prodData = EasyExcelFactory.read(prodStream).sheet().doReadSync();
-
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        // Duyệt qua từng dòng trong báo cáo
-        for (Map<String, Object> row : reportData) {
-            String barcode = String.valueOf(row.get("Barcode")).trim();
-
-            // Tìm kiếm quà tặng khớp với sản phẩm trong báo cáo
-            Optional<Map<String, Object>> matchingGift = giftData.stream()
-                    .filter(g -> barcode.equals(String.valueOf(g.get("SKU Sản phẩm")).trim()))
-                    .findFirst();
-
-            if (matchingGift.isPresent()) {
-                Map<String, Object> giftRow = matchingGift.get();
-
-                // Duyệt qua các sản phẩm quà tặng (từ 1 đến 4)
-                for (int i = 1; i <= 4; i++) {
-                    String giftBarcode = String.valueOf(giftRow.get("Tên sản phẩm " + i));
-                    String giftQtyStr = String.valueOf(giftRow.get("Số lượng " + i));
-
-                    // Nếu mã vạch quà tặng hợp lệ, xử lý thêm dòng mới
-                    if (giftBarcode != null && !giftBarcode.isBlank()) {
-                        Map<String, Object> newRow = new HashMap<>(row);
-                        newRow.put("Barcode", giftBarcode);
-
-                        // Thử chuyển đổi số lượng quà tặng từ String sang Integer
-                        try {
-                            newRow.put("Số sản phẩm", Integer.parseInt(giftQtyStr));
-                        } catch (NumberFormatException ignored) {}
-
-                        // Tìm kiếm sản phẩm trong prodData dựa trên barcode của quà tặng
-                        Optional<Map<String, Object>> matchingProduct = prodData.stream()
-                                .filter(p -> giftBarcode.equals(String.valueOf(p.get("barcode")).trim()))
-                                .findFirst();
-
-                        // Nếu tìm thấy sản phẩm khớp với barcode quà tặng, thay thế tên sản phẩm
-                        if (matchingProduct.isPresent()) {
-                            Map<String, Object> productRow = matchingProduct.get();
-                            String productName = String.valueOf(productRow.get("ten"));  // Lấy tên sản phẩm từ prodData
-                            newRow.put("Sản phẩm", productName);  // Thay thế tên sản phẩm trong newRow
-                        }
-
-                        // Thêm dòng mới vào kết quả
-                        result.add(newRow);
-                    }
-                }
-            } else {
-                // Nếu không có quà tặng tương ứng, thêm dòng báo cáo vào kết quả
-                result.add(row);
-            }
-        }
-
-        // Trả về kết quả cuối cùng
-        return result;
-    }
-
     public void deleteTable(String tableName) {
         if (tableName == null || tableName.isBlank()) {
             throw new IllegalArgumentException("Tên bảng không hợp lệ");
@@ -201,65 +145,49 @@ public class ExcelService {
     }
 
     public List<Map<String, Object>> expandComboRows() {
-        // Lấy dữ liệu báo cáo và quà tặng
         List<Map<String, Object>> report = fetchAllData("report");
-        List<Map<String, Object>> gift = fetchAllData("gift");
-        List<Map<String, Object>> prod = fetchAllData("products");  // Dữ liệu sản phẩm
+        List<Map<String, Object>> orders = fetchAllData("orders");
 
-        // Map để tra cứu nhanh theo SKU sản phẩm trong quà tặng
-        Map<String, List<String>> giftBarcodeMap = new HashMap<>();
-        for (Map<String, Object> g : gift) {
-            String sku = (g.get("sku_san_pham") + "").trim();
-
-            List<String> barcodes = new ArrayList<>();
-            for (int i = 1; i <= 4; i++) {
-                Object code = g.get("barcode_" + i);
-                if (code != null && !code.toString().trim().isEmpty()) {
-                    barcodes.add(code.toString().trim());
-                }
-            }
-
-            giftBarcodeMap.put(sku, barcodes);
-        }
-
-        // Tạo map tra cứu sản phẩm từ barcode sang tên sản phẩm
-        Map<String, String> prodBarcodeMap = new HashMap<>();
-        for (Map<String, Object> p : prod) {
-            String barcode = (p.get("barcode") + "").trim();
-            String productName = (p.get("ten") + "").trim();  // Lấy tên sản phẩm
-            prodBarcodeMap.put(barcode, productName);
+        // Tạo map để tra cứu nhanh (ma_don_hang + sku_combo) -> orders row
+        Map<String, Map<String, Object>> orderLookup = new HashMap<>();
+        for (Map<String, Object> o : orders) {
+            String orderNumber = (o.get("order_number") + "").trim();
+            String skuCombo = (o.get("sku_combo") + "").trim();
+            String key = orderNumber + "_" + skuCombo;
+            orderLookup.put(key, o);
         }
 
         List<Map<String, Object>> result = new ArrayList<>();
 
-        // Duyệt qua từng dòng trong báo cáo
         for (Map<String, Object> row : report) {
+            String maDonHang = (row.get("ma_don_hang") + "").trim();
             String barcode = (row.get("barcode") + "").trim();
+            String key = maDonHang + "_" + barcode;
 
-            // Kiểm tra xem sản phẩm có trong quà tặng hay không
-            if (giftBarcodeMap.containsKey(barcode)) {
-                List<String> children = giftBarcodeMap.get(barcode);
-                for (String childBarcode : children) {
-                    Map<String, Object> newRow = new LinkedHashMap<>(row);
-                    newRow.put("barcode", childBarcode); // Chỉ thay đổi cột "Barcode"
+            if (orderLookup.containsKey(key)) {
+                Map<String, Object> matchedOrder = orderLookup.get(key);
 
-                    // Tìm tên sản phẩm từ prodBarcodeMap và thêm vào "Sản phẩm"
-                    String productName = prodBarcodeMap.get(childBarcode);
-                    if (productName != null) {
-                        newRow.put("san_pham", productName); // Cập nhật tên sản phẩm
-                    }
+                // Clone dòng hiện tại để cập nhật
+                Map<String, Object> newRow = new LinkedHashMap<>(row);
+                newRow.put("ten_san_pham", matchedOrder.get("product_name"));
+                newRow.put("barcode", matchedOrder.get("barcode"));
 
-                    result.add(newRow);
-                }
+                result.add(newRow);
             } else {
-                result.add(row); // Nếu không phải combo, giữ nguyên dòng
+                // Không match thì giữ nguyên
+                result.add(row);
             }
         }
 
         return result;
     }
 
-
+    private boolean doesTableExist(String tableName) {
+        String sql = "SELECT COUNT(*) FROM information_schema.tables " +
+                "WHERE table_schema = DATABASE() AND table_name = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{tableName}, Integer.class);
+        return count != null && count > 0;
+    }
 
     public List<Map<String, Object>> fetchAllData(String tableName) {
         String sql = "SELECT * FROM " + tableName;

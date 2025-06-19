@@ -1,7 +1,7 @@
 var app = angular.module("reportApp", ['ui.bootstrap']);
 
-// var API_BASE_URL = "http://localhost:8080";
-var API_BASE_URL = 'https://report-1pjd.onrender.com';
+var API_BASE_URL = "http://localhost:8080";
+// var API_BASE_URL = 'https://report-1pjd.onrender.com';
 
 app.controller("ReportController", function ($scope, $http, $filter) {
     $scope.tables = [];
@@ -78,7 +78,7 @@ app.controller("ReportController", function ($scope, $http, $filter) {
                     $scope.columns = Object.keys($scope.tableData[0]);
                     // Mặc định tất cả các cột đều hiển thị
                     angular.forEach($scope.columns, function (col, index) {
-                        $scope.columnVisibility[col] = index < 3;     // Hiện tất cả cột
+                        $scope.columnVisibility[col] = index < 10;     // Hiện tất cả cột
                         $scope.filters[col] = "";                // Khởi tạo filter là rỗng
                     });
                 } else {
@@ -171,6 +171,60 @@ app.controller("ReportController", function ($scope, $http, $filter) {
     $scope.scrollToTop = function () {
         window.scrollTo({top: 0, behavior: "smooth"});
     };
+
+    //xuất file order
+    $scope.exportOrders = function () {
+        const shopDomain = "yourstore.myharavan.com"; // thay bằng tên shop thật
+        const accessToken = "your-access-token-here"; // token Haravan
+        const apiUrl = `https://${shopDomain}/admin/orders.json?status=any&limit=250`;
+
+        fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "X-Access-Token": accessToken
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                const orders = data.orders;
+                if (!orders || orders.length === 0) {
+                    alert("Không có đơn hàng.");
+                    return;
+                }
+
+                // Chuyển dữ liệu sang CSV
+                const csvRows = [];
+                const headers = ["Mã đơn hàng", "Khách hàng", "Sản phẩm", "SKU", "Số lượng"];
+                csvRows.push(headers.join(","));
+
+                orders.forEach(order => {
+                    order.line_items.forEach(item => {
+                        csvRows.push([
+                            `"${order.name}"`,
+                            `"${order.customer?.first_name || ''} ${order.customer?.last_name || ''}"`,
+                            `"${item.name}"`,
+                            `"${item.sku}"`,
+                            `"${item.quantity}"`
+                        ].join(","));
+                    });
+                });
+
+                const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "don_hang.csv");
+                document.body.appendChild(link); // bắt buộc với Firefox
+                link.click();
+                link.remove();
+            })
+            .catch(error => {
+                console.error("Lỗi khi lấy dữ liệu từ API:", error);
+                alert("Không thể lấy đơn hàng.");
+            });
+    };
+
 
 });
 

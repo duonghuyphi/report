@@ -26,15 +26,6 @@ public class ExcelController {
     @Autowired
     private DataSource dataSource;
 
-    @GetMapping("/report-expanded")
-    public List<Map<String, Object>> getExpandedReport(@RequestParam String report, @RequestParam String gift, @RequestParam String products) throws IOException {
-        InputStream reportStream = new FileInputStream("path/to/" + report);
-        InputStream giftStream = new FileInputStream("path/to/" + gift);
-        InputStream prodStream = new FileInputStream("path/to/" + products);
-
-
-        return ExcelService.expandComboProducts(reportStream, giftStream, prodStream);
-    }
     @GetMapping("/excel-data")
     public List<Map<String, Object>> getExcelData(@RequestParam String filename) {
         return excelService.getAllExcelData(filename);

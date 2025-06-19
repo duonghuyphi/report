@@ -47,6 +47,7 @@
                         <button onclick="location.reload()" class="btn btn-info" ng-disabled="uploading">
                             <i class="bi bi-arrow-clockwise"></i> Refresh
                         </button>
+                        <button class="btn btn-success mb-3" ng-click="exportOrders()" ng-disabled="uploading">Xuất đơn hàng</button>
                     </div>
 
                     <!-- Radio buttons -->
@@ -56,19 +57,9 @@
                         <label class="form-check-label" for="report">Report</label>
                     </div>
                     <div class="form-check">
-                        <input type="radio" class="form-check-input" id="Products" ng-model="selectedOption"
-                               name="uploadOption" value="products">
-                        <label class="form-check-label" for="Products">Products</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="radio" class="form-check-input" id="Gift" ng-model="selectedOption"
-                               name="uploadOption" value="gift">
-                        <label class="form-check-label" for="Gift">Gift</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="radio" class="form-check-input" id="tcl" ng-model="selectedOption"
-                               name="uploadOption" value="tclStock">
-                        <label class="form-check-label" for="tcl">TCL Stock</label>
+                        <input type="radio" class="form-check-input" id="Order" ng-model="selectedOption"
+                               name="uploadOption" value="orders">
+                        <label class="form-check-label" for="Order">Order</label>
                     </div>
                 </form>
 
@@ -202,7 +193,7 @@
                             </select>
                         </th>
                     </tr>
-                    <tr class="table-dark">
+                    <tr class="table-dark sticky-top">
                         <th ng-repeat="col in columns" ng-show="columnVisibility[col]">
                             {{ col }}
                         </th>
