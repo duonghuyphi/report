@@ -267,5 +267,11 @@ app.controller("SingleUploadCtrl", [
                     $scope.uploadError = true;
                 });
         };
+
+        $scope.getCok = function () {
+            $http.get(API_BASE_URL + "/api/getCookie")
+            .then(function (response) {})
+            .catch(function(response) {})
+        };
     },
 ]);
