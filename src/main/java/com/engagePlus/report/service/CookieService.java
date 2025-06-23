@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Service
 public class CookieService {
 
-    public void fetchSidCookieWithHeadlessChrome() {
+    public void fetchSidCookieWithHttpClient() {
         WebDriverManager.chromedriver().setup();
 
         ChromeOptions options = new ChromeOptions();
