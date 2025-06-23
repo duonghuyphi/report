@@ -270,8 +270,12 @@ app.controller("SingleUploadCtrl", [
 
         $scope.getCok = function () {
             $http.get(API_BASE_URL + "/api/getCookie")
-            .then(function (response) {})
-            .catch(function(response) {})
+                .then(function (response) {
+                    alert(response.data); // ✅ Cookie đã được cập nhật thành công!
+                })
+                .catch(function (response) {
+                    alert("❌ Lỗi: " + response.data);
+                });
         };
     },
 ]);
