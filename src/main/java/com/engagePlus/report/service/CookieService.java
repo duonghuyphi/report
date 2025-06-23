@@ -6,6 +6,7 @@ import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -24,43 +25,44 @@ import java.util.stream.Collectors;
 @Service
 public class CookieService {
 
-    public void fetchSidCookieWithHttpClient() {
-        HttpClient client = HttpClient.newBuilder()
-                .followRedirects(HttpClient.Redirect.ALWAYS)
-                .build();
+    public void fetchSidCookieWithHeadlessChrome() {
+        WebDriverManager.chromedriver().setup();
+
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless=new");  // Headless Chrome mới
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+
+        WebDriver driver = new ChromeDriver(options);
 
         try {
-            String loginUrl = "https://enablerplus.myharavan.com/admin";
+            driver.get("https://enablerplus.myharavan.com/admin");
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(loginUrl))
-                    .POST(buildFormData(Map.of(
-                            "customer[email]", "duonghuyphi@gmail.com",
-                            "customer[password]", "Enablerplus!@#2025"
-                    )))
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0.0.0 Safari/537.36")
-                    .build();
+            Thread.sleep(2000);
+            WebElement usernameInput = driver.findElement(By.id("Username"));
+            WebElement passwordInput = driver.findElement(By.id("Password"));
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            usernameInput.sendKeys("duonghuyphi@gmail.com");
+            passwordInput.sendKeys("Enablerplus!@#2025");
+            driver.findElement(By.id("btn-submit-login")).click();
 
-            List<String> cookies = response.headers().allValues("set-cookie");
+            Thread.sleep(5000); // chờ chuyển trang
 
-            for (String cookie : cookies) {
-                if (cookie.startsWith("sid.omnipower.sid=")) {
-                    String sid = cookie.split(";")[0].split("=")[1];
-                    replaceCookieInProperties(sid);
-                    System.out.println("✅ Lấy và ghi cookie thành công.");
-                    return;
-                }
+            Cookie sidCookie = driver.manage().getCookieNamed("sid.omnipower.sid");
+            if (sidCookie != null) {
+                replaceCookieInProperties(sidCookie.getValue());
+                System.out.println("✅ Lấy cookie thành công: " + sidCookie.getValue());
+            } else {
+                throw new RuntimeException("❌ Không tìm thấy cookie sid.omnipower.sid");
             }
 
-            throw new RuntimeException("❌ Không tìm thấy cookie sid.omnipower.sid");
-
         } catch (Exception e) {
-            throw new RuntimeException("❌ Lỗi khi đăng nhập và lấy cookie", e);
+            throw new RuntimeException("❌ Lỗi khi login bằng Selenium", e);
+        } finally {
+            driver.quit();
         }
     }
+
 
     private static HttpRequest.BodyPublisher buildFormData(Map<String, String> data) {
         String encoded = data.entrySet().stream()
