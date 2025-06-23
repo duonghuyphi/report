@@ -30,7 +30,7 @@ public class CookieService {
                 .build();
 
         try {
-            String loginUrl = "https://enablerplus.myharavan.com/account/login";
+            String loginUrl = "https://enablerplus.myharavan.com/admin";
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(loginUrl))
