@@ -34,6 +34,7 @@ public class CookieService {
         options.addArguments("--disable-dev-shm-usage");
 
         WebDriver driver = new ChromeDriver(options);
+        System.out.println("mo");
 
         try {
             // Nếu đã login trước đó bằng cookie lưu session
@@ -54,15 +55,6 @@ public class CookieService {
         } finally {
             driver.quit();
         }
-    }
-
-
-    private static HttpRequest.BodyPublisher buildFormData(Map<String, String> data) {
-        String encoded = data.entrySet().stream()
-                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) + "="
-                        + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
-                .collect(Collectors.joining("&"));
-        return HttpRequest.BodyPublishers.ofString(encoded);
     }
 
     private void replaceCookieInProperties(String newSidValue) {
