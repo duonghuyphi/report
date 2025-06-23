@@ -83,21 +83,15 @@ public class CookieService {
 
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith(key + "=")) {
-                    String oldValue = line.substring((key + "=").length());
+                    String originalCookieString = line.substring((key + "=").length());
 
-                    // Tách các cookie thành mảng theo dấu ;
-                    String[] cookies = oldValue.split(";");
-                    for (int i = 0; i < cookies.length; i++) {
-                        String cookie = cookies[i].trim();
-                        if (cookie.startsWith("sid.omnipower.sid=")) {
-                            cookies[i] = "sid.omnipower.sid=" + newSidValue;
-                            break;
-                        }
-                    }
+                    // Regex thay thế đúng phần sid.omnipower.sid=...
+                    String updatedCookieString = originalCookieString.replaceAll(
+                            "sid\\.omnipower\\.sid=[^;]*",
+                            "sid.omnipower.sid=" + newSidValue
+                    );
 
-                    // Gộp lại thành chuỗi mới
-                    String updatedValue = String.join("; ", cookies);
-                    content.append(key).append("=").append(updatedValue).append(System.lineSeparator());
+                    content.append(key).append("=").append(updatedCookieString).append(System.lineSeparator());
                     replaced = true;
                 } else {
                     content.append(line).append(System.lineSeparator());
@@ -105,23 +99,22 @@ public class CookieService {
             }
             reader.close();
 
-            // Nếu chưa có key trong file thì thêm mới
+            // Nếu không có dòng haravan.cookie thì thêm mới
             if (!replaced) {
                 content.append(key)
-                        .append("=")
-                        .append("sid.omnipower.sid=").append(newSidValue)
+                        .append("=sid.omnipower.sid=")
+                        .append(newSidValue)
                         .append(System.lineSeparator());
             }
 
-            // Ghi lại vào file
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
             writer.write(content.toString());
             writer.close();
 
-            System.out.println("✅ Cookie sid.omnipower.sid đã được cập nhật trong application.properties");
+            System.out.println("✅ Đã cập nhật sid.omnipower.sid trong haravan.cookie");
 
         } catch (IOException e) {
-            throw new RuntimeException("❌ Không ghi được file application.properties", e);
+            throw new RuntimeException("❌ Không thể ghi file application.properties", e);
         }
     }
 }
