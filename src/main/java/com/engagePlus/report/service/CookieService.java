@@ -29,35 +29,28 @@ public class CookieService {
         WebDriverManager.chromedriver().setup();
 
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new");  // Headless Chrome mới
+        options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
 
         WebDriver driver = new ChromeDriver(options);
 
         try {
+            // Nếu đã login trước đó bằng cookie lưu session
             driver.get("https://enablerplus.myharavan.com/admin");
 
-            Thread.sleep(2000);
-            WebElement usernameInput = driver.findElement(By.id("Username"));
-            WebElement passwordInput = driver.findElement(By.id("Password"));
-
-            usernameInput.sendKeys("duonghuyphi@gmail.com");
-            passwordInput.sendKeys("Enablerplus!@#2025");
-            driver.findElement(By.id("btn-submit-login")).click();
-
-            Thread.sleep(5000); // chờ chuyển trang
+            Thread.sleep(5000); // đợi trang load & browser tự xử lý session
 
             Cookie sidCookie = driver.manage().getCookieNamed("sid.omnipower.sid");
             if (sidCookie != null) {
+                System.out.println("✅ Đã lấy được cookie: " + sidCookie.getValue());
                 replaceCookieInProperties(sidCookie.getValue());
-                System.out.println("✅ Lấy cookie thành công: " + sidCookie.getValue());
             } else {
-                throw new RuntimeException("❌ Không tìm thấy cookie sid.omnipower.sid");
+                System.out.println("❌ Không tìm thấy sid.omnipower.sid (có thể chưa login)");
             }
 
         } catch (Exception e) {
-            throw new RuntimeException("❌ Lỗi khi login bằng Selenium", e);
+            e.printStackTrace();
         } finally {
             driver.quit();
         }

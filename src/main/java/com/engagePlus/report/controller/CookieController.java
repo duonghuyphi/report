@@ -35,8 +35,7 @@ public class CookieController {
             cookieService.fetchSidCookieWithHttpClient();
             return ResponseEntity.ok("✅ Cookie đã được cập nhật thành công!");
         } catch (Exception e) {
-            e.printStackTrace(); // IN RA LOG LỖI TRÊN CONSOLE
-            return ResponseEntity.status(500).body("❌ Lỗi xảy ra: " + e.getMessage());
+            return ResponseEntity.status(500).body("❌ Lỗi: " + e.getMessage());
         }
     }
 }
