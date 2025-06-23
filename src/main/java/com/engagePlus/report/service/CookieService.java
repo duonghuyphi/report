@@ -39,6 +39,7 @@ public class CookieService {
                             "customer[password]", "Enablerplus!@#2025"
                     )))
                     .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0.0.0 Safari/537.36")
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
