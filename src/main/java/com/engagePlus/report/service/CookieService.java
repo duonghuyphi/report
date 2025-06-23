@@ -9,53 +9,71 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 @Service
 public class CookieService {
 
-    public void fetchSidCookie() {
-        WebDriverManager.chromedriver().setup();
-        WebDriver driver = new ChromeDriver();
+    public void fetchSidCookieWithHttpClient() {
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.ALWAYS)
+                .build();
 
         try {
-            driver.get("https://enablerplus.myharavan.com/admin");
+            String loginUrl = "https://enablerplus.myharavan.com/account/login";
 
-            Thread.sleep(2000);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(loginUrl))
+                    .POST(buildFormData(Map.of(
+                            "customer[email]", "duonghuyphi@gmail.com",
+                            "customer[password]", "Enablerplus!@#2025"
+                    )))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .build();
 
-            WebElement usernameInput = driver.findElement(By.id("Username"));
-            WebElement passwordInput = driver.findElement(By.id("Password"));
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            usernameInput.sendKeys("duonghuyphi@gmail.com");
-            passwordInput.sendKeys("Enablerplus!@#2025");
+            List<String> cookies = response.headers().allValues("set-cookie");
 
-            WebElement loginButton = driver.findElement(By.id("btn-submit-login"));
-            loginButton.click();
-
-            Thread.sleep(5000);
-
-            Cookie sidCookie = driver.manage().getCookieNamed("sid.omnipower.sid");
-            if (sidCookie != null) {
-                replaceCookie(sidCookie.getValue());
-            } else {
-                System.out.println("❌ Không tìm thấy cookie sid.omnipower.sid.");
+            for (String cookie : cookies) {
+                if (cookie.contains("sid.omnipower.sid")) {
+                    String sid = cookie.split(";")[0].split("=")[1];
+                    replaceCookieInProperties(sid);
+                    System.out.println("✅ Lưu cookie thành công: " + sid);
+                    return;
+                }
             }
 
+            System.out.println("❌ Không tìm thấy cookie sid.omnipower.sid");
+
         } catch (Exception e) {
-            System.out.println("❌ Lỗi xảy ra: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            driver.quit();
+            throw new RuntimeException("❌ Lỗi khi lấy cookie bằng HttpClient", e);
         }
     }
 
-    private void replaceCookie(String sidCk) {
+    private static HttpRequest.BodyPublisher buildFormData(Map<String, String> data) {
+        String encoded = data.entrySet().stream()
+                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) + "="
+                        + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
+                .collect(Collectors.joining("&"));
+        return HttpRequest.BodyPublishers.ofString(encoded);
+    }
+
+    private void replaceCookieInProperties(String sidCk) {
         String filePath = "src/main/resources/application.properties";
         String key = "haravan.cookie";
 
         try {
-            // Đọc toàn bộ file thành từng dòng
             File file = new File(filePath);
             BufferedReader reader = new BufferedReader(new FileReader(file));
             StringBuilder content = new StringBuilder();
@@ -63,23 +81,23 @@ public class CookieService {
 
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith(key + "=")) {
-                    // Replace sid.omnipower.sid in the line
-                    String updatedLine = line.replaceAll("sid\\.omnipower\\.sid=([^;]*)", "sid.omnipower.sid=" + sidCk);
-                    content.append(updatedLine).append(System.lineSeparator());
+                    content.append(key).append("=").append("sid.omnipower.sid=").append(sidCk)
+                            .append(System.lineSeparator());
                 } else {
                     content.append(line).append(System.lineSeparator());
                 }
             }
             reader.close();
 
-            // Ghi lại toàn bộ nội dung
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
             writer.write(content.toString());
             writer.close();
 
-            System.out.println("✅ Cookie đã được cập nhật thành công.");
+            System.out.println("✅ Cookie đã được lưu vào file application.properties");
+
         } catch (IOException e) {
-            throw new RuntimeException("❌ Ghi file application.properties thất bại", e);
+            throw new RuntimeException("❌ Lỗi ghi file", e);
         }
     }
+
 }

@@ -30,7 +30,13 @@ public class CookieController {
     private CookieService cookieService;
 
     @GetMapping("/getCookie")
-    public void getDetailCookie() {
-        cookieService.fetchSidCookie();
+    public ResponseEntity<?> getDetailCookie() {
+        try {
+            cookieService.fetchSidCookieWithHttpClient(); // sử dụng HttpClient
+            return ResponseEntity.ok("✅ Cookie đã được cập nhật thành công");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("❌ Lỗi: " + e.getMessage());
+        }
     }
+
 }
