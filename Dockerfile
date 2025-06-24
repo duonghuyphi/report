@@ -16,7 +16,8 @@ COPY . .
 RUN chmod +x mvnw
 
 # Build project (bỏ qua test nếu cần)
-
+RUN ./mvnw package -DskipTests
+RUN ls -lah target
 
 # ---------- Stage 2: Runtime with Chrome ----------
 FROM eclipse-temurin:17-jdk

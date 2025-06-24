@@ -92,13 +92,6 @@
 			<version>4.20.0</version>
 		</dependency>
 
-		<!-- DevTools for Chrome v114 -->
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-devtools-v114</artifactId>
-			<version>4.20.0</version>
-		</dependency>
-
 		<dependency>
 				<groupId>io.github.bonigarcia</groupId>
 				<artifactId>webdrivermanager</artifactId>
