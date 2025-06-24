@@ -34,10 +34,10 @@ public class CookieService {
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-gpu");
-        options.addArguments("--user-data-dir=" + userDataDir); // ✅ Thư mục tạm, không bị trùng
+        options.addArguments("--user-data-dir=" + userDataDir);
+        options.setExperimentalOption("w3c", true); // ✅ Tránh dùng CDP
+
         WebDriver driver = new ChromeDriver(options);
-
-
         String sidValue = null;
 
         try {
@@ -51,23 +51,21 @@ public class CookieService {
             passInput.sendKeys(Hpassword);
             loginBtn.click();
 
-            // Chờ cho login xong bằng cách đợi URL đổi sang trang chính (vẫn ở accounts.haravan.com)
+            // Chờ login
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
             wait.until(ExpectedConditions.urlContains("accounts.haravan.com"));
 
-            // ✅ Sau đó tự chuyển hướng đến admin
+            // Chuyển đến admin
             driver.get("https://enablerplus.myharavan.com/admin");
+            Thread.sleep(3000); // hoặc dùng wait.until...
 
-            // Chờ trang admin load
-            Thread.sleep(3000); // hoặc dùng WebDriverWait để chờ element cụ thể
-
-            // Lấy cookie sid sau khi vào trang admin
+            // Lấy cookie
             Cookie sidCookie = driver.manage().getCookieNamed("sid.omnipower.sid");
             if (sidCookie != null) {
                 sidValue = sidCookie.getValue();
                 replaceCookieInProperties(sidValue);
             } else {
-                System.err.println("❌ Không tìm thấy cookie sid.omnipower.sid – có thể login thất bại hoặc cookie nằm ở domain khác");
+                System.err.println("❌ Không tìm thấy cookie sid.omnipower.sid");
             }
 
         } catch (Exception e) {
@@ -76,9 +74,9 @@ public class CookieService {
             driver.quit();
         }
 
-
         return sidValue != null ? sidValue : "";
     }
+
 
 
     private void replaceCookieInProperties(String newSidValue) {
