@@ -89,9 +89,7 @@
 				<groupId>org.seleniumhq.selenium</groupId>
 				<artifactId>selenium-java</artifactId>
 				<version>4.21.0</version>
-			</dependency>
-
-			<!-- WebDriverManager: tự động tải ChromeDriver phù hợp -->
+			</dependency><!-- WebDriverManager: tự động tải ChromeDriver phù hợp -->
 			<dependency>
 				<groupId>io.github.bonigarcia</groupId>
 				<artifactId>webdrivermanager</artifactId>

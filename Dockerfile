@@ -46,9 +46,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Cài Google Chrome
-RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
-    apt-get update && apt-get install -y google-chrome-stable && \
+RUN wget -q https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_115.0.5790.102-1_amd64.deb && \
+    apt-get update && \
+    apt-get install -y ./google-chrome-stable_115.0.5790.102-1_amd64.deb && \
+    rm google-chrome-stable_115.0.5790.102-1_amd64.deb && \
     rm -rf /var/lib/apt/lists/*
 
 # Tạo thư mục chạy ứng dụng
