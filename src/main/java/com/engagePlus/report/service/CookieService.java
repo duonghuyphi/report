@@ -27,7 +27,7 @@ public class CookieService {
         WebDriverManager.chromedriver().setup();
 
         ChromeOptions options = new ChromeOptions();
-        options.setBinary("/usr/bin/google-chrome"); // nếu dùng Docker
+        options.setBinary("/opt/google/chrome/google-chrome"); // nếu dùng Docker
         options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
         options.addArguments("user-agent=Mozilla/5.0 Chrome/120.0.0.0 Safari/537.36");
 
