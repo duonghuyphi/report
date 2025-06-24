@@ -27,10 +27,13 @@ public class CookieService {
         WebDriverManager.chromedriver().setup();
 
         ChromeOptions options = new ChromeOptions();
-        options.setBinary("/opt/google/chrome/google-chrome"); // nếu dùng Docker
-        options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
-        options.addArguments("user-agent=Mozilla/5.0 Chrome/120.0.0.0 Safari/537.36");
+        options.addArguments("--headless=new"); // dùng headless mới của Chrome
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-gpu");
+        options.addArguments("user-agent=Mozilla/5.0");
 
+// KHÔNG cần setBinary nếu chrome đã cài trong Docker
         WebDriver driver = new ChromeDriver(options);
 
         String sidValue = null;
