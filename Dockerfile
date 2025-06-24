@@ -22,11 +22,18 @@ RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor
     > /etc/apt/sources.list.d/google-chrome.list && \
     apt-get update && apt-get install -y google-chrome-stable
 
-# Install ChromeDriver matching installed Chrome
+# Cài ChromeDriver khớp với Chrome (chỉ lấy major.minor.build)
 RUN CHROME_VERSION=$(google-chrome-stable --version | grep -oP '\d+\.\d+\.\d+') && \
-    DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION") && \
-    wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip && \
+    echo "Chrome version: $CHROME_VERSION" && \
+    MAJOR_VERSION=$(echo $CHROME_VERSION | cut -d '.' -f 1) && \
+    MINOR_VERSION=$(echo $CHROME_VERSION | cut -d '.' -f 2) && \
+    BUILD_VERSION=$(echo $CHROME_VERSION | cut -d '.' -f 3) && \
+    COMBINED_VERSION="$MAJOR_VERSION.$MINOR_VERSION.$BUILD_VERSION" && \
+    DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$COMBINED_VERSION") && \
+    echo "Downloading ChromeDriver version: $DRIVER_VERSION" && \
+    wget -O /tmp/chromedriver.zip "https://chromedriver.storage.googleapis.com/${DRIVER_VERSION}/chromedriver_linux64.zip" && \
     unzip /tmp/chromedriver.zip -d /usr/local/bin/ && chmod +x /usr/local/bin/chromedriver
+
 
 # Copy WAR
 COPY --from=build /app/target/report-0.0.1-SNAPSHOT.war report.war
