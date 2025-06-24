@@ -33,7 +33,7 @@ public class CookieController {
     }
 
     @GetMapping("/getCookie")
-    public ResponseEntity<?> getCookie() {
+    public ResponseEntity<?> getCookie() throws IOException {
         String cookie = seleniumService.getSidCookie();
         return ResponseEntity.ok(Map.of("cookie", cookie));
     }

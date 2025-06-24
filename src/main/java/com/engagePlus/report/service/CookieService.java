@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.time.Duration;
 
 @Service
@@ -23,18 +24,19 @@ public class CookieService {
     @Value("${haravan.password}")
     private String Hpassword;
 
-    public String getSidCookie() {
+    public String getSidCookie() throws IOException {
         WebDriverManager.chromedriver().setup();
+
+        String userDataDir = Files.createTempDirectory("chrome-user-data").toString();
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-gpu");
-        options.addArguments("--user-data-dir=/tmp/chrome-user-data"); // ✅ tránh lỗi session
-
-// KHÔNG cần setBinary nếu chrome đã cài trong Docker
+        options.addArguments("--user-data-dir=" + userDataDir); // ✅ Thư mục tạm, không bị trùng
         WebDriver driver = new ChromeDriver(options);
+
 
         String sidValue = null;
 
