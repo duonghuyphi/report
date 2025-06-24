@@ -25,37 +25,33 @@ import java.util.stream.Collectors;
 @Service
 public class CookieService {
 
-    public void fetchSidCookieWithHttpClient() {
-        WebDriverManager.chromedriver().setup();
+    public void fetchSidCookieWithHttpClient() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.ALWAYS)
+                .build();
 
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://enablerplus.myharavan.com/admin"))
+                .header("User-Agent", "Mozilla/5.0")
+                .GET()
+                .build();
 
-        WebDriver driver = new ChromeDriver(options);
-        System.out.println("mo");
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        try {
-            // Nếu đã login trước đó bằng cookie lưu session
-            driver.get("https://enablerplus.myharavan.com/admin");
-
-            Thread.sleep(5000); // đợi trang load & browser tự xử lý session
-
-            Cookie sidCookie = driver.manage().getCookieNamed("sid.omnipower.sid");
-            if (sidCookie != null) {
-                System.out.println("✅ Đã lấy được cookie: " + sidCookie.getValue());
-                replaceCookieInProperties(sidCookie.getValue());
-            } else {
-                System.out.println("❌ Không tìm thấy sid.omnipower.sid (có thể chưa login)");
+        // Lấy cookie từ response
+        List<String> setCookies = response.headers().allValues("set-cookie");
+        for (String cookie : setCookies) {
+            if (cookie.startsWith("sid.omnipower.sid=")) {
+                String sid = cookie.split(";")[0].split("=")[1];
+                System.out.println("✅ Lấy được sid.omnipower.sid: " + sid);
+                replaceCookieInProperties(sid); // nếu cần lưu
+                return;
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            driver.quit();
         }
+
+        System.out.println("❌ Không tìm thấy cookie sid.omnipower.sid trong response");
     }
+
 
     private void replaceCookieInProperties(String newSidValue) {
         String filePath = "src/main/resources/application.properties";
