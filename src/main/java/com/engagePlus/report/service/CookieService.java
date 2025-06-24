@@ -27,7 +27,7 @@ public class CookieService {
         WebDriverManager.chromedriver().setup();
 
         ChromeOptions options = new ChromeOptions();
-        options.setBinary("/usr/bin/google-chrome"); // nếu dùng Docker
+//        options.setBinary("/usr/bin/google-chrome"); // nếu dùng Docker
         options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
         options.addArguments("user-agent=Mozilla/5.0 Chrome/120.0.0.0 Safari/537.36");
 
@@ -48,8 +48,7 @@ public class CookieService {
 
             // Chờ chuyển hướng sau khi login
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-            wait.until(ExpectedConditions.urlContains("/admin"));
-//            driver.get("https://enablerplus.myharavan.com/admin");
+            wait.until(ExpectedConditions.urlToBe("https://enablerplus.myharavan.com/admin"));
 
             Thread.sleep(3000);
             Cookie sidCookie = driver.manage().getCookieNamed("sid.omnipower.sid");
