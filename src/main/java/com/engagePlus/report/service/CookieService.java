@@ -46,17 +46,23 @@ public class CookieService {
             passInput.sendKeys(Hpassword);
             loginBtn.click();
 
-            // Chờ chuyển hướng sau khi login
+            // Chờ cho login xong bằng cách đợi URL đổi sang trang chính (vẫn ở accounts.haravan.com)
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-            wait.until(ExpectedConditions.urlToBe("https://enablerplus.myharavan.com/admin"));
+            wait.until(ExpectedConditions.urlContains("accounts.haravan.com"));
 
-            Thread.sleep(3000);
+            // ✅ Sau đó tự chuyển hướng đến admin
+            driver.get("https://enablerplus.myharavan.com/admin");
+
+            // Chờ trang admin load
+            Thread.sleep(3000); // hoặc dùng WebDriverWait để chờ element cụ thể
+
+            // Lấy cookie sid sau khi vào trang admin
             Cookie sidCookie = driver.manage().getCookieNamed("sid.omnipower.sid");
             if (sidCookie != null) {
                 sidValue = sidCookie.getValue();
                 replaceCookieInProperties(sidValue);
             } else {
-                System.err.println("❌ Không tìm thấy cookie sid.omnipower.sid – có thể login thất bại hoặc redirect chưa đúng");
+                System.err.println("❌ Không tìm thấy cookie sid.omnipower.sid – có thể login thất bại hoặc cookie nằm ở domain khác");
             }
 
         } catch (Exception e) {
@@ -64,6 +70,7 @@ public class CookieService {
         } finally {
             driver.quit();
         }
+
 
         return sidValue != null ? sidValue : "";
     }
