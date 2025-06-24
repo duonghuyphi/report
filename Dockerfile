@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 COPY . .
 
+# ✅ Cấp quyền thực thi cho mvnw (sửa lỗi 126 trên Render)
+RUN chmod +x mvnw
+
 # Build project (bỏ qua test nếu cần)
 RUN ./mvnw package -DskipTests
 
@@ -57,7 +60,7 @@ COPY --from=builder /app/target/report-0.0.1-SNAPSHOT.jar app.jar
 # Mở cổng ứng dụng Spring Boot
 EXPOSE 8080
 
-# Nếu dùng Chrome headless thì cần set biến môi trường (nếu cần)
+# Nếu dùng Chrome headless thì cần set biến môi trường
 ENV CHROME_BIN=/usr/bin/google-chrome \
     CHROME_FLAGS="--no-sandbox --headless --disable-gpu --disable-dev-shm-usage"
 
