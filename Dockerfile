@@ -1,7 +1,7 @@
 # ---------- Stage 1: Build the JAR ----------
 FROM eclipse-temurin:17-jdk AS builder
 
-# Cài các công cụ cần thiết
+# Cài công cụ cần thiết
 RUN apt-get update && apt-get install -y \
     curl \
     unzip \
@@ -42,15 +42,24 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Cài Chrome
+# Cài Google Chrome
 RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
     apt-get update && apt-get install -y google-chrome-stable && \
     rm -rf /var/lib/apt/lists/*
 
-# App runtime
+# Tạo thư mục chạy ứng dụng
 WORKDIR /app
+
+# Copy file JAR đã build từ stage trước
 COPY --from=builder /app/target/report-0.0.1-SNAPSHOT.jar app.jar
 
-# Run Spring Boot app
+# Mở cổng ứng dụng Spring Boot
+EXPOSE 8080
+
+# Nếu dùng Chrome headless thì cần set biến môi trường (nếu cần)
+ENV CHROME_BIN=/usr/bin/google-chrome \
+    CHROME_FLAGS="--no-sandbox --headless --disable-gpu --disable-dev-shm-usage"
+
+# Khởi chạy app
 ENTRYPOINT ["java", "-jar", "app.jar"]
