@@ -1,14 +1,15 @@
-FROM maven:3-openjdk-17-alpine AS build
+# Stage 1: Build với Maven (Alpine)
+FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
 WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
 
-FROM openjdk:17-alpine
-
+# Stage 2: Runtime với Alpine + Chrome + ChromeDriver
+FROM eclipse-temurin:17-alpine
 WORKDIR /app
 
-# Cài các thư viện cần thiết
+# Cài Chrome & ChromeDriver từ Alpine repo
 RUN apk add --no-cache \
     bash \
     curl \
@@ -22,11 +23,10 @@ RUN apk add --no-cache \
     harfbuzz \
     ca-certificates
 
-# Thiết lập đường dẫn để Selenium tìm thấy Chrome và ChromeDriver
+# ENV để Selenium tìm được trình duyệt
 ENV CHROME_BIN=/usr/bin/chromium-browser \
     CHROMEDRIVER=/usr/bin/chromedriver
 
-# Copy WAR file từ stage build
 COPY --from=build /app/target/report-0.0.1-SNAPSHOT.war report.war
 
 EXPOSE 8080
