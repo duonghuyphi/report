@@ -16,9 +16,9 @@ COPY . .
 RUN chmod +x mvnw
 
 # Build project (bỏ qua test nếu cần)
-RUN ./mvnw package -DskipTests
 
-# ---------- Stage 2: Runtime with Chrome for Selenium ----------
+
+# ---------- Stage 2: Runtime with Chrome ----------
 FROM eclipse-temurin:17-jdk
 
 # Cài Chrome + thư viện phụ thuộc
@@ -45,25 +45,22 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Cài Google Chrome
-RUN wget -q https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_115.0.5790.102-1_amd64.deb && \
-    apt-get update && \
-    apt-get install -y ./google-chrome-stable_115.0.5790.102-1_amd64.deb && \
-    rm google-chrome-stable_115.0.5790.102-1_amd64.deb && \
+# Tải Chrome 114 từ slimjet mirror
+RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && apt-get install -y google-chrome-stable && \
     rm -rf /var/lib/apt/lists/*
 
-# Tạo thư mục chạy ứng dụng
-WORKDIR /app
 
-# Copy file JAR đã build từ stage trước
+# App runtime
+WORKDIR /app
 COPY --from=builder /app/target/report-0.0.1-SNAPSHOT.jar app.jar
 
 # Mở cổng ứng dụng Spring Boot
 EXPOSE 8080
 
-# Nếu dùng Chrome headless thì cần set biến môi trường
+# Set biến môi trường cho Chrome headless
 ENV CHROME_BIN=/usr/bin/google-chrome \
     CHROME_FLAGS="--no-sandbox --headless --disable-gpu --disable-dev-shm-usage"
 
-# Khởi chạy app
 ENTRYPOINT ["java", "-jar", "app.jar"]
