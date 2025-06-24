@@ -26,15 +26,15 @@ public class CookieService {
     public String getSidCookie() {
         WebDriverManager.chromedriver().setup();
 
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new"); // dùng headless mới của Chrome
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-gpu");
-        options.addArguments("user-agent=Mozilla/5.0");
+//        ChromeOptions options = new ChromeOptions();
+//        options.addArguments("--headless=new"); // dùng headless mới của Chrome
+//        options.addArguments("--no-sandbox");
+//        options.addArguments("--disable-dev-shm-usage");
+//        options.addArguments("--disable-gpu");
+//        options.addArguments("user-agent=Mozilla/5.0");
 
 // KHÔNG cần setBinary nếu chrome đã cài trong Docker
-        WebDriver driver = new ChromeDriver(options);
+        WebDriver driver = new ChromeDriver();
 
         String sidValue = null;
 
