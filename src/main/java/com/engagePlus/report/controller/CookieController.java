@@ -26,16 +26,15 @@ import java.util.Map;
 @RequestMapping("/api")
 public class CookieController {
 
-    @Autowired
-    private CookieService cookieService;
+    private final CookieService seleniumService;
+
+    public CookieController(CookieService seleniumService) {
+        this.seleniumService = seleniumService;
+    }
 
     @GetMapping("/getCookie")
-    public ResponseEntity<String> getCookie() {
-        try {
-            cookieService.fetchSidCookieWithHttpClient();
-            return ResponseEntity.ok("✅ Cookie đã được cập nhật thành công!");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("❌ Lỗi: " + e.getMessage());
-        }
+    public ResponseEntity<?> getCookie() {
+        String cookie = seleniumService.getSidCookie();
+        return ResponseEntity.ok(Map.of("cookie", cookie));
     }
 }
