@@ -35,7 +35,7 @@ RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor
 WORKDIR /app
 
 # Copy file jar đã build từ local sang image
-COPY target/*.jar app.jar
+COPY target/report-0.0.1-SNAPSHOT.jar app.jar
 
 # Mặc định chạy Chrome headless với các flag
 ENV _JAVA_OPTIONS="-Dwebdriver.chrome.driver=/usr/bin/chromedriver"
